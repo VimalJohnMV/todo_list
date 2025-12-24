@@ -128,3 +128,60 @@ input {
   color: white;
   border-color: #333;
 }
+/* ... existing CSS ... */
+
+/* Group the buttons together on the right side */
+.actions {
+  display: flex;
+  gap: 5px;
+}
+
+/* Edit Mode Layout */
+.edit-mode {
+  display: flex;
+  width: 100%;
+  gap: 5px;
+}
+
+.edit-input {
+  flex-grow: 1;
+  padding: 5px;
+  border: 1px solid #007bff;
+  border-radius: 4px;
+}
+
+/* Button Colors */
+.edit-btn {
+  background-color: #ffc107; /* Yellow for edit */
+  color: #333;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.save-btn {
+  background-color: #28a745; /* Green for save */
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.cancel-btn {
+  background-color: #6c757d; /* Grey for cancel */
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+/* Hover effects */
+.edit-btn:hover { background-color: #e0a800; }
+.save-btn:hover { background-color: #218838; }
+.cancel-btn:hover { background-color: #5a6268; }
