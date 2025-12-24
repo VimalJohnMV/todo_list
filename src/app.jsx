@@ -1,157 +1,107 @@
-// App.js File
-import React, { Component } from "react";
-import "bootstrap/dist/css/bootstrap.css";
-import Container from "react-bootstrap/Container";
-import Row from "react-bootstrap/Row";
-import Col from "react-bootstrap/Col";
-import Button from "react-bootstrap/Button";
-import InputGroup from "react-bootstrap/InputGroup";
-import FormControl from "react-bootstrap/FormControl";
-import ListGroup from "react-bootstrap/ListGroup";
+import React, { useState, useEffect } from 'react';
+import './App.css';
 
-class App extends Component {
-    constructor(props) {
-        super(props);
+function TodoApp() {
+  // Load tasks from Local Storage
+  const [tasks, setTasks] = useState(() => {
+    const savedTasks = localStorage.getItem("my-todo-tasks");
+    return savedTasks ? JSON.parse(savedTasks) : [];
+  });
 
-        // Setting up state
-        this.state = {
-            userInput: "",
-            list: [],
-        };
-    }
+  const [inputValue, setInputValue] = useState("");
+  
+  // NEW: State to track which filter is active ('all', 'active', or 'completed')
+  const [filter, setFilter] = useState('all');
 
-    // Set a user input value
-    updateInput(value) {
-        this.setState({
-            userInput: value,
-        });
-    }
+  // Save to Local Storage whenever tasks change
+  useEffect(() => {
+    localStorage.setItem("my-todo-tasks", JSON.stringify(tasks));
+  }, [tasks]);
 
-    // Add item if user input in not empty
-    addItem() {
-        if (this.state.userInput !== "") {
-            const userInput = {
-                // Add a random id which is used to delete
-                id: Math.random(),
+  const addTask = () => {
+    if (inputValue.trim() === "") return;
+    const newTask = {
+      id: Date.now(),
+      text: inputValue,
+      completed: false,
+    };
+    setTasks([...tasks, newTask]);
+    setInputValue("");
+  };
 
-                // Add a user value to list
-                value: this.state.userInput,
-            };
+  const deleteTask = (id) => {
+    setTasks(tasks.filter((task) => task.id !== id));
+  };
 
-            // Update list
-            const list = [...this.state.list];
-            list.push(userInput);
+  const toggleTask = (id) => {
+    setTasks(tasks.map((task) =>
+      task.id === id ? { ...task, completed: !task.completed } : task
+    ));
+  };
 
-            // reset state
-            this.setState({
-                list,
-                userInput: "",
-            });
-        }
-    }
+  // NEW: Calculate which tasks to show based on the current filter
+  const filteredTasks = tasks.filter((task) => {
+    if (filter === 'active') return !task.completed;
+    if (filter === 'completed') return task.completed;
+    return true; // 'all'
+  });
 
-    // Function to delete item from list use id to delete
-    deleteItem(key) {
-        const list = [...this.state.list];
+  return (
+    <div className="app-container">
+      <div className="todo-card">
+        <h1>My To-Do List</h1>
+        
+        <div className="input-group">
+          <input
+            type="text"
+            placeholder="Add a new task..."
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && addTask()}
+          />
+          <button className="add-btn" onClick={addTask}>Add</button>
+        </div>
 
-        // Filter values and leave value which we need to delete
-        const updateList = list.filter((item) => item.id !== key);
+        {/* NEW: Filter Buttons */}
+        <div className="filter-group">
+          <button 
+            className={`filter-btn ${filter === 'all' ? 'active' : ''}`} 
+            onClick={() => setFilter('all')}
+          >
+            All
+          </button>
+          <button 
+            className={`filter-btn ${filter === 'active' ? 'active' : ''}`} 
+            onClick={() => setFilter('active')}
+          >
+            Active
+          </button>
+          <button 
+            className={`filter-btn ${filter === 'completed' ? 'active' : ''}`} 
+            onClick={() => setFilter('completed')}
+          >
+            Completed
+          </button>
+        </div>
 
-        // Update list in state
-        this.setState({
-            list: updateList,
-        });
-    }
-
-    editItem = (index) => {
-      const todos = [...this.state.list];
-      const editedTodo = prompt('Edit the todo:');
-      if (editedTodo !== null && editedTodo.trim() !== '') {
-        let updatedTodos = [...todos]
-        updatedTodos[index].value= editedTodo
-        this.setState({
-          list: updatedTodos,
-      });
-      }
-    }
-
-    render() {
-        return (
-            <Container>
-                <Row
-                    style={{
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        fontSize: "3rem",
-                        fontWeight: "bolder",
-                    }}
-                >
-                    TODO LIST
-                </Row>
-
-                <hr />
-                <Row>
-                    <Col md={{ span: 5, offset: 4 }}>
-                        <InputGroup className="mb-3">
-                            <FormControl
-                                placeholder="add item . . . "
-                                size="lg"
-                                value={this.state.userInput}
-                                onChange={(item) =>
-                                    this.updateInput(item.target.value)
-                                }
-                                aria-label="add something"
-                                aria-describedby="basic-addon2"
-                            />
-                            <InputGroup>
-                                <Button
-                                    variant="dark"
-                                    className="mt-2"
-                                    onClick={() => this.addItem()}
-                                >
-                                    ADD
-                                </Button>
-                            </InputGroup>
-                        </InputGroup>
-                    </Col>
-                </Row>
-                <Row>
-                    <Col md={{ span: 5, offset: 4 }}>
-                        <ListGroup>
-                            {/* map over and print items */}
-                            {this.state.list.map((item, index) => {
-                                return (
-                                  <div key = {index} > 
-                                    <ListGroup.Item
-                                        variant="dark"
-                                        action
-                                        style={{display:"flex",
-                                                justifyContent:'space-between'
-                                      }}
-                                    >
-                                        {item.value}
-                                        <span>
-                                        <Button style={{marginRight:"10px"}}
-                                        variant = "light"
-                                        onClick={() => this.deleteItem(item.id)}>
-                                          Delete
-                                        </Button>
-                                        <Button variant = "light"
-                                        onClick={() => this.editItem(index)}>
-                                          Edit
-                                        </Button>
-                                        </span>
-                                    </ListGroup.Item>
-                                  </div>
-                                );
-                            })}
-                        </ListGroup>
-                    </Col>
-                </Row>
-            </Container>
-        );
-    }
+        <ul className="task-list">
+          {/* NOTICE: We map over 'filteredTasks' instead of 'tasks' */}
+          {filteredTasks.map((task) => (
+            <li key={task.id} className={`task-item ${task.completed ? 'completed' : ''}`}>
+              <span onClick={() => toggleTask(task.id)}>
+                {task.text}
+              </span>
+              <button className="delete-btn" onClick={() => deleteTask(task.id)}>
+                Delete
+              </button>
+            </li>
+          ))}
+        </ul>
+        
+        {tasks.length === 0 && <p className="empty-msg">No tasks yet!</p>}
+      </div>
+    </div>
+  );
 }
 
-export default App;
+export default TodoApp;
